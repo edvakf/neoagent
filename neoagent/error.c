@@ -54,6 +54,7 @@ const char *na_error_messages[NA_ERROR_MAX] = {
     [NA_ERROR_FAILED_SETUP_SIGNAL]   = "failed to set signal handler",
     [NA_ERROR_FAILED_IGNORE_SIGNAL]  = "failed to ignore signal",
     [NA_ERROR_FAILED_DAEMONIZE]      = "failed to daemonize",
+    [NA_ERROR_FAILED_CREATE_PROCESS] = "failed to create process",
     [NA_ERROR_FAILED_READ]           = "failed to read",
     [NA_ERROR_FAILED_WRITE]          = "failed to write",
     [NA_ERROR_BROKEN_PIPE]           = "broken pipe",

@@ -48,7 +48,8 @@
 #include "version.h"
 
 // constants
-static const int NA_ENV_MAX = 1;
+static const int NA_ENV_MAX         = 10;
+static const int NA_PROC_NAME_MAX   = 512;
 
 // external globals
 extern volatile sig_atomic_t SigExit;
@@ -60,6 +61,7 @@ static void na_usage(void);
 static void na_signal_exit_handler (int sig);
 static void na_signal_clear_handler (int sig);
 static void na_setup_signals (void);
+static void na_set_env_proc_name (char *orig_proc_name, const char *env_proc_name);
 
 static void na_version(void)
 {
@@ -120,8 +122,15 @@ static void na_setup_signals (void)
 
 }
 
+static void na_set_env_proc_name (char *orig_proc_name, const char *env_proc_name)
+{
+    strncpy(orig_proc_name + strlen(orig_proc_name), ": ",          NA_PROC_NAME_MAX);
+    strncpy(orig_proc_name + strlen(orig_proc_name), env_proc_name, NA_PROC_NAME_MAX);
+}
+
 int main (int argc, char *argv[])
 {
+    pid_t               worker[NA_ENV_MAX];
     pthread_t           th[NA_ENV_MAX];
     na_env_t           *env[NA_ENV_MAX];
     mpool_t            *env_pool;
@@ -209,7 +218,14 @@ int main (int argc, char *argv[])
     }
 
     for (int i=0;i<env_cnt;++i) {
-        pthread_create(&th[i], NULL, na_event_loop, env[i]);
+        worker[i] = fork();
+        if (worker[i] == 0) {
+            na_set_env_proc_name(argv[0], env[i]->name);
+            pthread_create(&th[i], NULL, na_event_loop, env[i]);
+            break;
+        } else if (worker[i] == -1) {
+            NA_DIE_WITH_ERROR(NA_ERROR_FAILED_CREATE_PROCESS);
+        }
     }
 
     // monitoring signal
