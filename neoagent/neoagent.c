@@ -130,7 +130,7 @@ static void na_set_env_proc_name (char *orig_proc_name, const char *env_proc_nam
 
 int main (int argc, char *argv[])
 {
-    pid_t               worker[NA_ENV_MAX];
+    pid_t               env_process[NA_ENV_MAX];
     pthread_t           th[NA_ENV_MAX];
     na_env_t           *env[NA_ENV_MAX];
     mpool_t            *env_pool;
@@ -218,12 +218,12 @@ int main (int argc, char *argv[])
     }
 
     for (int i=0;i<env_cnt;++i) {
-        worker[i] = fork();
-        if (worker[i] == 0) {
+        env_process[i] = fork();
+        if (env_process[i] == 0) {
             na_set_env_proc_name(argv[0], env[i]->name);
             pthread_create(&th[i], NULL, na_event_loop, env[i]);
             break;
-        } else if (worker[i] == -1) {
+        } else if (env_process[i] == -1) {
             NA_DIE_WITH_ERROR(NA_ERROR_FAILED_CREATE_PROCESS);
         }
     }
